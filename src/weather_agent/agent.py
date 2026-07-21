@@ -1,59 +1,3 @@
-"""The LangGraph agentic loop for the weather agent.
-
-Graph shape:
-
-    START -> classify_query -> execute_tool_calls -> was_query_fully_rejected -+
-                                                                                |
-                        (pure rejection: only reject_non_temperature_query)    |
-                                                                                v
-                                                             decline_query -> END
-                                                                                |
-                        (get_city_temperature call present, alone or mixed)    |
-                                                                                v
-                               +---- compose_answer -------+
-                               |               |
-                         (execute_tool_calls)   (no tool calls)
-                               |               v
-                               +----   audit_answer -> END
-
-``classify_query`` is bound with ``tool_choice="required"`` so the model must
-always call ``get_city_temperature`` and/or ``reject_non_temperature_query``
-instead of answering directly. ``was_query_fully_rejected`` inspects which
-tools were just called: if the batch is a pure rejection (only
-``reject_non_temperature_query``, no ``get_city_temperature``),
-``decline_query`` returns the same static canned rejection message as
-``audit_answer`` (see below) as the final answer, bypassing the LLM entirely
-so a purely off-topic question is guaranteed identical wording rather than
-possibly being paraphrased. Otherwise (a pure temperature lookup or a
-composite question mixing both) the batch flows through
-``compose_answer``, which is bound without a forced tool choice so it
-can compose a final natural-language answer (and may still call a tool again
-for another city).
-
-``compose_answer`` is a plain LLM call and is therefore not guaranteed to
-faithfully relay the reject tool's message or to omit answers to non-weather
-parts of a composite question. Rather than trusting it structurally,
-``audit_answer`` runs once synthesis has produced a final answer (i.e. once
-it stops requesting tools): it asks the model, via structured output and
-given the whole conversation so far (not just the final answer in
-isolation), whether that answer contains any non-weather information, and
-if so, replaces it with a static refusal message in code instead of relying
-on the LLM to word the refusal itself.
-
-``execute_tool_calls`` stores the batch of ``ToolMessage``s it just produced
-in the graph state (``AgentState.last_tool_messages``), so
-``was_query_fully_rejected`` can tell which tools were called directly from
-state instead of re-scanning the full message history on every call.
-
-Each ``WeatherAgent`` instance keeps its own in-memory checkpointer and a
-generated thread id, so every call to ``run()`` on the same instance is
-treated as one continuing multi-turn conversation: prior messages are
-automatically merged with each new question via ``MessagesState``'s
-``add_messages`` reducer. The checkpointer is an internal implementation
-detail (not injected) since it is never read or managed from outside the
-agent, and history is intentionally lost once the instance is discarded.
-"""
-
 import uuid
 from typing import Any, Final, NotRequired
 
@@ -134,7 +78,6 @@ _TEMPERATURE_TOOL_NAME: Final[str] = "get_city_temperature"
 
 
 class OutputCheck(BaseModel):
-    """Structured verdict on whether a synthesized answer leaked non-weather content."""
 
     contains_non_weather_info: bool = Field(
         description="True if the assistant answered non-weather questions."
@@ -142,19 +85,11 @@ class OutputCheck(BaseModel):
 
 
 class AgentState(MessagesState):
-    """``MessagesState`` plus the execute_tool_calls node's most recent
-    batch of results.
-
-    ``last_tool_messages`` lets ``was_query_fully_rejected`` know which tools
-    were just called without re-scanning ``messages`` for the last
-    ``AIMessage`` with tool calls.
-    """
 
     last_tool_messages: NotRequired[list[BaseMessage]]
 
 
 class WeatherAgent:
-    """A minimal LangGraph agent answering current city-temperature questions."""
 
     def __init__(self, llm: BaseChatModel, tools: list[BaseTool]) -> None:
         self._tools_by_name: dict[str, BaseTool] = {t.name: t for t in tools}
@@ -170,7 +105,6 @@ class WeatherAgent:
         )
 
     def run(self, query: str, *, verbose: bool = False) -> str:
-        """Answer a question, continuing this instance's conversation."""
         initial_prompt = _INITIAL_PROMPT_TEMPLATE.format(query=query)
         initial_state: AgentState = {"messages": [HumanMessage(content=initial_prompt)]}
         final_state: dict[str, Any] = (

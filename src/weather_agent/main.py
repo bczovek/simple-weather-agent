@@ -1,14 +1,3 @@
-"""CLI entry point for the weather agent.
-
-Starts an interactive prompt that reads questions from stdin and answers
-only those about the current temperature of a named city, until the user
-types "exit" (or stdin is closed).
-
-Usage:
-    python -m weather_agent.main
-    python -m weather_agent.main --verbose
-"""
-
 import argparse
 import logging
 import os
@@ -67,8 +56,6 @@ def _print_answer(answer: str) -> None:
 
 
 def _run_query_loop(agent: WeatherAgent, *, verbose: bool) -> None:
-    """Read questions from stdin and print answers until the user types
-    "exit" (or stdin is closed)."""
     while True:
         try:
             print(

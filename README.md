@@ -1,5 +1,9 @@
 # Egyszerű időjárás agent
 
+> Ez a felhasználói dokumentáció. Az implementáció belső felépítéséért,
+> a LangGraph gráf működéséért és tervezési döntésekért lásd a
+> [DEVELOPERS.md](DEVELOPERS.md) fájlt.
+
 ## Követelmények
 
 - Python 3.11 vagy újabb
@@ -77,3 +81,10 @@ Példák:
   hogy az adott témában bármilyen információt adna.
 - Összetett (több várost vagy több altémát érintő) kérdéseknél csak a
   hőmérsékletre vonatkozó részt válaszolja meg, a többit elutasítja.
+
+## További dokumentáció
+
+Az implementáció belső felépítéséért (modulok, a LangGraph állapotgép
+gráfja mermaid diagrammal, tervezési döntések, trade-off-ok) lásd a
+[DEVELOPERS.md](DEVELOPERS.md) fejlesztői dokumentációt.
+

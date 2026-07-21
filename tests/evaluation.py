@@ -1,11 +1,3 @@
-"""LLM-as-judge helpers for asserting on the weather agent's free-form answers.
-
-Mirrors the structured-output approach used by the agent's own
-``audit_answer`` node (see ``weather_agent.agent.OutputCheck``): rather than
-pattern-matching on wording, an LLM call with a Pydantic response schema
-renders a verdict on the answer's content.
-"""
-
 from typing import cast
 
 from langchain_core.language_models import BaseChatModel
@@ -42,7 +34,6 @@ _COMPOSITE_ANSWER_PROMPT_TEMPLATE = (
 
 
 class TemperatureAnswerVerdict(BaseModel):
-    """Verdict on whether a reply answered a pure temperature question."""
 
     answers_temperature_question: bool = Field(
         description=(
@@ -53,7 +44,6 @@ class TemperatureAnswerVerdict(BaseModel):
 
 
 class CompositeAnswerVerdict(BaseModel):
-    """Verdict on a reply to a mixed temperature / non-temperature question."""
 
     answers_temperature_question: bool = Field(
         description=(
@@ -81,7 +71,6 @@ class CompositeAnswerVerdict(BaseModel):
 def evaluate_temperature_answer(
     llm: BaseChatModel, question: str, answer: str
 ) -> TemperatureAnswerVerdict:
-    """Judge whether ``answer`` answers a pure city-temperature ``question``."""
     judge: Runnable[str, TemperatureAnswerVerdict] = cast(
         "Runnable[str, TemperatureAnswerVerdict]",
         llm.with_structured_output(TemperatureAnswerVerdict),
@@ -95,7 +84,6 @@ def evaluate_temperature_answer(
 def evaluate_composite_answer(
     llm: BaseChatModel, question: str, answer: str
 ) -> CompositeAnswerVerdict:
-    """Judge a reply to a composite temperature + non-temperature ``question``."""
     judge: Runnable[str, CompositeAnswerVerdict] = cast(
         "Runnable[str, CompositeAnswerVerdict]",
         llm.with_structured_output(CompositeAnswerVerdict),

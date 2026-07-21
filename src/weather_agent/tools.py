@@ -1,11 +1,3 @@
-"""LangChain tool definitions for the weather agent.
-
-Tools are built via ``build_tools`` rather than declared as bare
-module-level ``@tool`` functions, so the ``OpenMeteoClient`` dependency is
-injected at construction time instead of being hard-coded inside the tool
-bodies.
-"""
-
 from langchain_core.tools import BaseTool, tool
 
 from weather_agent.open_meteo_client import (
@@ -22,11 +14,6 @@ REJECTION_MESSAGE_TEMPLATE = (
 
 
 def build_tools(client: OpenMeteoClient) -> list[BaseTool]:
-    """Build the two tools available to the weather agent.
-
-    Args:
-        client: the Open-Meteo client used to resolve city temperatures.
-    """
 
     @tool
     def get_city_temperature(city: str) -> str:

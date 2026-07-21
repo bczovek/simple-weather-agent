@@ -1,9 +1,3 @@
-"""Client for the public Open-Meteo geocoding and forecast APIs.
-
-See https://open-meteo.com/en/docs and
-https://open-meteo.com/en/docs/geocoding-api for the underlying HTTP APIs.
-"""
-
 from dataclasses import dataclass
 from typing import Any, Final, cast
 
@@ -15,7 +9,6 @@ _REQUEST_TIMEOUT_SECONDS: Final[float] = 10.0
 
 
 class CityNotFoundError(Exception):
-    """Raised when the Open-Meteo geocoding API finds no match for a city."""
 
     def __init__(self, city: str) -> None:
         super().__init__(f"No location found for city: {city!r}")
@@ -23,7 +16,6 @@ class CityNotFoundError(Exception):
 
 
 class OpenMeteoRequestError(Exception):
-    """Raised when a request to an Open-Meteo API endpoint fails."""
 
     def __init__(self, url: str, cause: Exception) -> None:
         super().__init__(f"Request to {url} failed: {cause}")
@@ -32,7 +24,6 @@ class OpenMeteoRequestError(Exception):
 
 @dataclass(frozen=True)
 class CityLocation:
-    """A geocoded city location resolved from the Open-Meteo geocoding API."""
 
     name: str
     country: str
@@ -42,22 +33,14 @@ class CityLocation:
 
 @dataclass(frozen=True)
 class CurrentTemperature:
-    """A current temperature reading resolved from the Open-Meteo forecast API."""
 
     value: float
     unit: str
 
 
 class OpenMeteoClient:
-    """Thin HTTP client wrapping the Open-Meteo geocoding and forecast APIs."""
 
     def geocode(self, city: str) -> CityLocation:
-        """Resolve a city name to a single best-matching location.
-
-        Raises:
-            CityNotFoundError: if no location matches ``city``.
-            OpenMeteoRequestError: if the geocoding request fails.
-        """
         # Third-party JSON response: shape isn't statically known, so Any is
         # unavoidable for the raw payload values here.
         params: dict[str, Any] = {
@@ -81,11 +64,6 @@ class OpenMeteoClient:
         )
 
     def get_current_temperature(self, location: CityLocation) -> CurrentTemperature:
-        """Fetch the current 2m air temperature for a geocoded location.
-
-        Raises:
-            OpenMeteoRequestError: if the forecast request fails.
-        """
         # Third-party JSON response: shape isn't statically known, so Any is
         # unavoidable for the raw payload values here.
         params: dict[str, Any] = {

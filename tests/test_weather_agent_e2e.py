@@ -1,29 +1,3 @@
-"""End-to-end tests for the WeatherAgent's full LangGraph flow.
-
-These tests call the real OpenAI API (via the ``llm`` fixture) and the real
-Open-Meteo API (via ``build_tools``/``OpenMeteoClient``), exercising the
-complete graph rather than mocking any of its collaborators. They cover the
-three distinct paths through the graph described in ``weather_agent.agent``:
-
-* a pure temperature question, answered via the ``compose_answer`` /
-  ``audit_answer`` path;
-* a composite question mixing a temperature request with a non-temperature
-  request, which must answer the former and decline the latter;
-* a pure non-temperature question, short-circuited by
-  ``decline_query`` to the exact static rejection message.
-
-Correctness of the free-form answers in the first two cases is judged by an
-LLM using structured output (see ``evaluation.py``), mirroring the approach
-the agent itself uses in its ``audit_answer`` node. The judge uses its own,
-deliberately stronger model (the ``judge_llm`` fixture, see ``conftest.py``)
-than the agent under test.
-
-Run with: ``pytest -s -m e2e`` (requires ``OPENAI_API_KEY``; see
-``conftest.py``). The ``-s`` flag disables pytest's stdout capturing so each
-question/answer pair (printed by every test) is visible even for passing
-tests.
-"""
-
 from collections.abc import Callable
 from typing import Final
 
@@ -91,7 +65,6 @@ _REJECTION_MESSAGE: Final[str] = (
 def test_pure_temperature_question_is_answered(
     make_agent: Callable[[], WeatherAgent], judge_llm: ChatOpenAI, question: str
 ) -> None:
-    """A question about only a city's temperature should be answered directly."""
     agent = make_agent()
 
     answer = agent.run(question)
@@ -106,7 +79,6 @@ def test_pure_temperature_question_is_answered(
 def test_composite_question_answers_temperature_and_declines_rest(
     make_agent: Callable[[], WeatherAgent], judge_llm: ChatOpenAI, question: str
 ) -> None:
-    """A mixed question should answer the temperature part and decline the rest."""
     agent = make_agent()
 
     answer = agent.run(question)
@@ -123,7 +95,6 @@ def test_composite_question_answers_temperature_and_declines_rest(
 def test_pure_non_temperature_question_is_rejected(
     make_agent: Callable[[], WeatherAgent], question: str
 ) -> None:
-    """A question unrelated to any city's temperature gets the static rejection."""
     agent = make_agent()
 
     answer = agent.run(question)
