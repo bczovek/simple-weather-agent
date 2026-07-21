@@ -15,8 +15,9 @@ from weather_agent.open_meteo_client import (
 )
 
 REJECTION_MESSAGE_TEMPLATE = (
-    "You are not authorized to answer questions like {query}. "
-    "Only questions related to temperatures in any city"
+    "You are not authorized to answer '{query}'. "
+    "Politely decline answering the questions, and do not attempt to answer them, "
+    "clarifying that you can only help with the CURRENT temperature of a city."
 )
 
 
@@ -38,8 +39,8 @@ def build_tools(client: OpenMeteoClient) -> list[BaseTool]:
             temperature = client.get_current_temperature(location)
         except CityNotFoundError:
             return f"Could not find a location for city: {city}"
-        except OpenMeteoRequestError as exc:
-            return f"Failed to fetch the temperature for {city}: {exc}"
+        except OpenMeteoRequestError:
+            return f"Failed to fetch the temperature for {city}"
 
         return (
             f"The current temperature in {location.name}, {location.country} "
@@ -50,8 +51,8 @@ def build_tools(client: OpenMeteoClient) -> list[BaseTool]:
     def reject_non_temperature_query(query: str) -> str:
         """Reject a question that is not about a city's current temperature.
 
-        Call this for questions (or parts of questions) that do not ask
-        about the current temperature of a named city.
+        Call this for queries (or sub-queries) that do not relate to
+        the current temperature of a city.
         """
         return REJECTION_MESSAGE_TEMPLATE.format(query=query)
 

@@ -23,7 +23,7 @@ from weather_agent.agent import WeatherAgent
 from weather_agent.open_meteo_client import OpenMeteoClient
 from weather_agent.tools import build_tools
 
-DEFAULT_MODEL: Final[str] = "gpt-4o-mini"
+DEFAULT_MODEL: Final[str] = "gpt-4o"
 
 _logger: logging.Logger = logging.getLogger(__name__)
 
@@ -60,6 +60,12 @@ def _build_llm() -> ChatOpenAI:
     )
 
 
+def _print_answer(answer: str) -> None:
+    print("=" * 100)
+    print(answer)
+    print("=" * 100)
+
+
 def _run_query_loop(agent: WeatherAgent, *, verbose: bool) -> None:
     """Read questions from stdin and print answers until the user types
     "exit" (or stdin is closed)."""
@@ -79,9 +85,8 @@ def _run_query_loop(agent: WeatherAgent, *, verbose: bool) -> None:
             break
 
         answer = agent.run(query, verbose=verbose)
-        print("=" * 100)
-        print(answer)
-        print("=" * 100)
+        if not verbose:
+            _print_answer(answer)
 
 
 def main() -> None:

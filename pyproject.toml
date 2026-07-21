@@ -10,8 +10,18 @@ dependencies = [
     "python-dotenv>=1.0",
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+]
+
 [project.scripts]
 weather-agent = "weather_agent.main:main"
+
+[tool.pytest.ini_options]
+markers = [
+    "e2e: end-to-end tests that call the real OpenAI API (requires OPENAI_API_KEY).",
+]
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -19,6 +29,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+weather_agent = ["py.typed"]
 
 [tool.ruff.lint]
 select = [
