@@ -1,0 +1,88 @@
+[project]
+name = "simple-weather-agent"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph>=0.2",
+    "langchain-openai>=0.2",
+    "langchain-core>=0.3",
+    "requests>=2.31",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+weather-agent = "weather_agent.main:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "B",    # flake8-bugbear: missing @abstractmethod, useless ABC, mutable defaults
+    "C4",   # flake8-comprehensions: unnecessary list/set/dict constructions
+    "C90",  # mccabe: cyclomatic complexity
+    "E",    # pycodestyle errors: PEP 8 errors
+    "W",    # pycodestyle warnings: trailing whitespace, blank lines
+    "F",    # pyflakes: undefined names, unused imports
+    "FBT",  # flake8-boolean-trap: boolean positional arguments
+    "I",    # isort: import ordering
+    "N",    # pep8-naming: PascalCase classes, snake_case methods
+    "PERF", # perflint: performance anti-patterns
+    "PL",   # pylint: errors, warnings, refactor suggestions
+    "PTH",  # flake8-use-pathlib: prefer pathlib over os.path
+    "RET",  # flake8-return: return statement hygiene
+    "RSE",  # flake8-raise: raise statement hygiene
+    "RUF",  # ruff-specific rules
+    "S",    # flake8-bandit: security issues
+    "SIM",  # flake8-simplify: collapsible ifs, redundant expressions
+    "SLF",  # flake8-self: private member access outside class
+    "SLOT", # flake8-slots: missing __slots__ on classes with __eq__
+    "T100", # flake8-debugger: leftover breakpoint() calls
+    "TRY",  # tryceratops: exception handling patterns
+    "UP",   # pyupgrade: X | None, X | Y instead of Optional/Union
+    "ANN",  # flake8-annotations: missing type hints
+]
+ignore = [
+    "PLR2004",  # magic number comparisons — too noisy
+    "PLR6301",  # don't force @staticmethod when self unused — too strict for OOP subclassing
+    "TRY003",   # allow long messages in raise statements
+    "S101",     # allow assert statements
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 6
+
+[tool.ruff.lint.pylint]
+max-args = 4
+max-statements = 15
+max-branches = 6
+max-returns = 3
+
+[tool.ruff.lint.flake8-annotations]
+suppress-none-returning = false
+
+[tool.mypy]
+# Require type annotations everywhere
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+
+# Prevent implicit Any from leaking in
+disallow_any_generics = true
+disallow_any_unimported = true
+warn_return_any = true
+
+# Enforce proper use of Optional/Union
+strict_optional = true
+
+# Catch dead code and redundant casts
+warn_unreachable = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+# No implicit re-exports (helps with clean module boundaries)
+no_implicit_reexport = true
