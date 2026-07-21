@@ -17,8 +17,17 @@ tool choice so it can compose a final natural-language answer (and may still
 call a tool again for another city) — there is deliberately no short-circuit
 around it, so the model is trusted to relay the reject tool's message
 faithfully instead of the code enforcing verbatim wording structurally.
+
+Each ``WeatherAgent`` instance keeps its own in-memory checkpointer and a
+generated thread id, so every call to ``run()`` on the same instance is
+treated as one continuing multi-turn conversation: prior messages are
+automatically merged with each new question via ``MessagesState``'s
+``add_messages`` reducer. The checkpointer is an internal implementation
+detail (not injected) since it is never read or managed from outside the
+agent, and history is intentionally lost once the instance is discarded.
 """
 
+import uuid
 from typing import Any
 
 from langchain_core.language_models import BaseChatModel
@@ -29,7 +38,9 @@ from langchain_core.messages import (
     SystemMessage,
     ToolMessage,
 )
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import BaseTool
+from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
@@ -50,23 +61,29 @@ class WeatherAgent:
         self._tools_by_name: dict[str, BaseTool] = {t.name: t for t in tools}
         self._llm_forced = llm.bind_tools(tools, tool_choice="required")
         self._llm_auto = llm.bind_tools(tools)
+        self._checkpointer = InMemorySaver()
+        self._config: RunnableConfig = {
+            "configurable": {"thread_id": uuid.uuid4().hex}
+        }
         self._graph: CompiledStateGraph[
             MessagesState, None, MessagesState, MessagesState
         ] = self._build_graph()
 
     def run(self, query: str, *, verbose: bool = False) -> str:
-        """Answer a single question, returning the final answer text."""
+        """Answer a question, continuing this instance's conversation."""
         initial_state: MessagesState = {"messages": [HumanMessage(content=query)]}
         final_state: dict[str, Any] = (
             self._run_verbose(initial_state)
             if verbose
-            else self._graph.invoke(initial_state)
+            else self._graph.invoke(initial_state, self._config)
         )
         return str(final_state["messages"][-1].content)
 
     def _run_verbose(self, initial_state: MessagesState) -> dict[str, Any]:
         final_state: dict[str, Any] = dict(initial_state)
-        for step in self._graph.stream(initial_state, stream_mode="values"):
+        for step in self._graph.stream(
+            initial_state, self._config, stream_mode="values"
+        ):
             final_state = step
             step["messages"][-1].pretty_print()
         return final_state
@@ -117,4 +134,4 @@ class WeatherAgent:
         builder.add_conditional_edges(
             "llm_call_synthesize", self._should_continue, ["tool_node", END]
         )
-        return builder.compile()
+        return builder.compile(checkpointer=self._checkpointer)
