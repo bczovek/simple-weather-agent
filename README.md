@@ -53,7 +53,13 @@ Enter a question about a city's current temperature, or type 'exit' to quit.
 > Mekkora most a hőmérséklet Budapesten?
 ```
 
-A kilépéshez írd be, hogy `exit` (vagy nyomj `Ctrl+D`-t).
+A kilépéshez írd be, hogy `exit`.
+
+> **Megjegyzés:** egy futtatás egyetlen, folytatólagos beszélgetésnek
+> számít — az agent emlékszik a korábban feltett kérdésekre és az arra adott
+> válaszokra ugyanazon a futáson belül. Új, előzmények nélküli beszélgetés
+> indításához lépj ki (`exit`), majd indítsd újra a
+> `./run.sh` szkriptet.
 
 ### Parancssori paraméterek
 

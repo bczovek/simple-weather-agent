@@ -41,8 +41,6 @@ class CurrentTemperature:
 class OpenMeteoClient:
 
     def geocode(self, city: str) -> CityLocation:
-        # Third-party JSON response: shape isn't statically known, so Any is
-        # unavoidable for the raw payload values here.
         params: dict[str, Any] = {
             "name": city,
             "count": 1,
@@ -64,8 +62,6 @@ class OpenMeteoClient:
         )
 
     def get_current_temperature(self, location: CityLocation) -> CurrentTemperature:
-        # Third-party JSON response: shape isn't statically known, so Any is
-        # unavoidable for the raw payload values here.
         params: dict[str, Any] = {
             "latitude": location.latitude,
             "longitude": location.longitude,
