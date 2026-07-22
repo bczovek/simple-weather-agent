@@ -24,7 +24,6 @@ _SYSTEM_PROMPT = (
     "or questions related to any other topic. When faced with an unrelated or "
     "non-current-temperature question, address that part and politely decline to "
     "answer it, without providing any information about it. "
-    "ALWAYS answer using the same language the query is in."
 )
 
 _OUTPUT_CHECK_PROMPT = (
@@ -54,9 +53,7 @@ _OUTPUT_CHECK_PROMPT = (
     "Flag the reply as containing non-weather information ONLY if it "
     "actually provides an answer, fact, opinion, translation, unit "
     "conversion unrelated to current temperature, or recommendation about "
-    "something other than the current temperature of a city. "
-    "Keep in mind that the user can ask and the weather assistant "
-    "can answer in different languages!"
+    "something other than the current temperature of a city."
 )
 
 _INITIAL_PROMPT_TEMPLATE = (
@@ -120,11 +117,15 @@ class WeatherAgent:
         return str(final_state["messages"][-1].content)
 
     def _run_verbose(self, initial_state: AgentState) -> dict[str, Any]:
+        printed_message_count = 0
         for step in self._graph.stream(
             initial_state, self._config, stream_mode="values"
         ):
             final_state = step
-            step["messages"][-1].pretty_print()
+            new_messages = step["messages"][printed_message_count:]
+            for message in new_messages:
+                message.pretty_print()
+            printed_message_count = len(step["messages"])
         return final_state
 
     def _classify_query(self, state: AgentState) -> dict[str, list[BaseMessage]]:

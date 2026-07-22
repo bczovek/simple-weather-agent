@@ -91,8 +91,7 @@ flowchart TD
 
 #### Miért két külön védelmi mechanizmus biztosítja a témakorlátozás betartását (`classify_query` + `audit_answer`)?
 
-A tervezés két, egymást kiegészítő védelmi rétegre épül, mert egyik réteg
-sem garantálja önmagában a szigorú témakorlátozást:
+A tervezés két, egymást kiegészítő védelmi rétegre épül:
 
 1. **`classify_query`** kényszerített tool-választással biztosítja, hogy a
    modell **sosem válaszolhat közvetlenül** — mindig valamelyik tool-t
@@ -112,17 +111,15 @@ sem garantálja önmagában a szigorú témakorlátozást:
 Minden `WeatherAgent` példány saját `InMemorySaver` checkpointer-t és egy
 véletlenszerűen generált `thread_id`-t tart fenn, így egyazon példányon
 végzett egymást követő `run()` hívások egyetlen, folytatólagos
-többfordulós beszélgetésként kezelődnek. A
-checkpointer belső implementációs részlet (nincs kívülről injektálva),
-mivel sosem olvassák vagy kezelik kívülről; a beszélgetés-történet
-szándékosan elvész, amint a példány megszűnik.
+többfordulós beszélgetésként kezelődnek.
 
 ## Tesztelés
 
-A `tests/` könyvtár end-to-end teszteket tartalmaz (`test_weather_agent_e2e.py`),
-amelyek a **valódi** OpenAI API-t és a **valódi** Open-Meteo API-t hívják —
-egyik komponens sincs mockolva, a teljes gráfot végigfuttatják. A tesztek a
-gráf három lehetséges útvonalát fedik le:
+A `tests/` könyvtár az `agent_eval` teszt-csomagot tartalmazza
+(`test_weather_agent_agent_eval.py`), amely end-to-end módon a **valódi**
+OpenAI API-t és a **valódi** Open-Meteo API-t hívja — egyik komponens sincs
+mockolva, a teljes gráfot végigfuttatják. A tesztek a gráf három lehetséges
+útvonalát fedik le:
 
 - tiszta hőmérséklet-kérdés (`compose_answer` / `audit_answer` útvonal),
 - összetett kérdés (hőmérséklet + irreleváns rész keveréke),
@@ -131,14 +128,30 @@ gráf három lehetséges útvonalát fedik le:
 A szabadszöveges válaszok helyességét egy másik LLM ítéli meg strukturált
 kimenettel (`evaluation.py`).
 
-Futtatás: `pytest -s -m e2e` (érvényes `OPENAI_API_KEY` szükséges hozzá; lásd
-`tests/conftest.py`). A `-s` kapcsoló kikapcsolja a pytest stdout-capture-ét,
-hogy minden teszt kérdés/válasz párja látható legyen sikeres futás esetén is.
+### Teszt-függőségek telepítése
 
-Ehhez a teszt-futtatáshoz nincs külön `run.sh`, mert ez fejlesztői/CI
-eszköz, nem a végfelhasználói futtatás része; a `pyproject.toml`
+Ehhez a teszt-futtatáshoz nincs külön `run.sh`, a `pyproject.toml`
 `[project.optional-dependencies].test` csoportja (`pytest`) tartalmazza a
 szükséges függőséget.
+
+```bash
+cd simple-weather-agent
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[test]"
+```
+
+Az `agent_eval` tesztek futtatásához érvényes `OPENAI_API_KEY` szükséges
+(lásd `.env.example` és `tests/conftest.py`).
+
+### Tesztek futtatása
+
+```bash
+pytest -s -m agent_eval
+```
+
+A `-s` kapcsoló kikapcsolja a pytest stdout-capture-ét, hogy minden teszt
+kérdés/válasz párja látható legyen sikeres futás esetén is.
 
 ## Ismert korlátok / jövőbeli fejlesztési lehetőségek
 

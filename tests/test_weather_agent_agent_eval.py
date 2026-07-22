@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 
 from weather_agent.agent import WeatherAgent
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.agent_eval
 
 _PURE_TEMPERATURE_QUESTIONS = [
     "What is the current temperature in Paris?",
@@ -67,7 +67,7 @@ def test_pure_temperature_question_is_answered(
 ) -> None:
     agent = make_agent()
 
-    answer = agent.run(question)
+    answer = agent.run(question, verbose = True)
     print(f"\nQ: {question}\nA: {answer}")
 
     assert answer != _REJECTION_MESSAGE
@@ -81,7 +81,7 @@ def test_composite_question_answers_temperature_and_declines_rest(
 ) -> None:
     agent = make_agent()
 
-    answer = agent.run(question)
+    answer = agent.run(question, verbose = True)
     print(f"\nQ: {question}\nA: {answer}")
 
     assert answer != _REJECTION_MESSAGE
@@ -97,7 +97,7 @@ def test_pure_non_temperature_question_is_rejected(
 ) -> None:
     agent = make_agent()
 
-    answer = agent.run(question)
+    answer = agent.run(question, verbose = True)
     print(f"\nQ: {question}\nA: {answer}")
 
     assert answer == _REJECTION_MESSAGE

@@ -1,7 +1,7 @@
 # Egyszerű időjárás agent
 
 > Ez a felhasználói dokumentáció. Az implementáció belső felépítéséért,
-> a LangGraph gráf működéséért és tervezési döntésekért lásd a
+> a LangGraph gráf működéséért lásd a
 > [DEVELOPERS.md](DEVELOPERS.md) fájlt.
 
 ## Követelmények
@@ -43,6 +43,7 @@ Az agentet a `run.sh` szkripttel kell indítani, amely:
 
 ```bash
 cd simple-weather-agent
+chmod +x run.sh
 ./run.sh
 ```
 
@@ -61,11 +62,10 @@ A kilépéshez írd be, hogy `exit`.
 > indításához lépj ki (`exit`), majd indítsd újra a
 > `./run.sh` szkriptet.
 
-> **Megjegyzés:** bár az agent törekszik arra, hogy a kérdés nyelvén
-> válaszoljon, magyar nyelvű kérdés esetén is előfordulhat, hogy angolul
-> válaszol. Az időjárással nem kapcsolatos kérdésekre az agent mindig egy
-> statikus, angol nyelvű elutasító üzenettel válaszol, a kérdés nyelvétől
-> függetlenül.
+> **Megjegyzés:** az agent — a kérdés nyelvétől függetlenül — szinte mindig
+> angolul válaszol (`gpt-4o` modellel tesztelve). Ez az időjárással
+> kapcsolatos válaszokra és az időjárással nem kapcsolatos kérdésekhez
+> tartozó statikus elutasító üzenetre egyaránt vonatkozik.
 
 ### Parancssori paraméterek
 
@@ -93,10 +93,4 @@ Példák:
   hogy az adott témában bármilyen információt adna.
 - Összetett (több várost vagy több altémát érintő) kérdéseknél csak a
   hőmérsékletre vonatkozó részt válaszolja meg, a többit elutasítja.
-
-## További dokumentáció
-
-Az implementáció belső felépítéséért (modulok, a LangGraph állapotgép
-gráfja mermaid diagrammal, tervezési döntések, trade-off-ok) lásd a
-[DEVELOPERS.md](DEVELOPERS.md) fejlesztői dokumentációt.
 

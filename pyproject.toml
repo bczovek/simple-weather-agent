@@ -19,7 +19,7 @@ test = [
 
 [tool.pytest.ini_options]
 markers = [
-    "e2e: end-to-end tests that call the real OpenAI API (requires OPENAI_API_KEY).",
+    "agent_eval: end-to-end agent evaluation tests that call the real OpenAI API (requires OPENAI_API_KEY).",
 ]
 
 [build-system]
