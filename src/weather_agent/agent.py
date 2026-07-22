@@ -23,7 +23,8 @@ _SYSTEM_PROMPT = (
     "not allowed to answer questions about past or forecasted/future temperatures, "
     "or questions related to any other topic. When faced with an unrelated or "
     "non-current-temperature question, address that part and politely decline to "
-    "answer it, without providing any information about it."
+    "answer it, without providing any information about it. "
+    "ALWAYS answer using the same language the query is in."
 )
 
 _OUTPUT_CHECK_PROMPT = (
@@ -53,18 +54,25 @@ _OUTPUT_CHECK_PROMPT = (
     "Flag the reply as containing non-weather information ONLY if it "
     "actually provides an answer, fact, opinion, translation, unit "
     "conversion unrelated to current temperature, or recommendation about "
-    "something other than the current temperature of a city."
+    "something other than the current temperature of a city. "
+    "Keep in mind that the user can ask and the weather assistant "
+    "can answer in different languages!"
 )
 
 _INITIAL_PROMPT_TEMPLATE = (
-    "Decompose the following user query into one or more sub-queries. "
-    "Classify the sub-queries into two categories: (1) sub-queries that require "
-    "the CURRENT (right now) temperature of one or more named cities, and (2) "
-    "sub-queries that do not relate to the current temperature of any city — "
-    "this includes questions about past or forecasted/future temperatures, and "
-    "any other unrelated topic. For sub-queries in category (1), call the tool "
-    "'get_city_temperature' for each city to get the current temperatures to "
-    "answer the query. For sub-queries in category (2), call the tool "
+    "Decompose the following user query into one or more sub-queries. Cities "
+    "may be named directly or referred to indirectly (e.g. 'Hungary's top 3 "
+    "most populated cities', 'western European capitals'). For any indirect "
+    "reference, use your own knowledge to resolve it to the specific set of "
+    "named cities it refers to before proceeding. Classify the sub-queries "
+    "into two categories: (1) sub-queries that require the CURRENT (right "
+    "now) temperature of one or more cities (named directly or resolved "
+    "from an indirect reference), and (2) sub-queries that do not relate to "
+    "the current temperature of any city — this includes questions about "
+    "past or forecasted/future temperatures, and any other unrelated topic. "
+    "For sub-queries in category (1), call the tool 'get_city_temperature' "
+    "for each resolved city to get the current temperatures to answer the "
+    "query. For sub-queries in category (2), call the tool "
     "'reject_non_temperature_query'.\n\n"
     "User query: {query}"
 )
@@ -78,19 +86,16 @@ _TEMPERATURE_TOOL_NAME: Final[str] = "get_city_temperature"
 
 
 class OutputCheck(BaseModel):
-
     contains_non_weather_info: bool = Field(
         description="True if the assistant answered non-weather questions."
     )
 
 
 class AgentState(MessagesState):
-
     last_tool_messages: NotRequired[list[BaseMessage]]
 
 
 class WeatherAgent:
-
     def __init__(self, llm: BaseChatModel, tools: list[BaseTool]) -> None:
         self._tools_by_name: dict[str, BaseTool] = {t.name: t for t in tools}
         self._llm_forced = llm.bind_tools(tools, tool_choice="required")

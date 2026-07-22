@@ -61,6 +61,12 @@ A kilépéshez írd be, hogy `exit`.
 > indításához lépj ki (`exit`), majd indítsd újra a
 > `./run.sh` szkriptet.
 
+> **Megjegyzés:** bár az agent törekszik arra, hogy a kérdés nyelvén
+> válaszoljon, magyar nyelvű kérdés esetén is előfordulhat, hogy angolul
+> válaszol. Az időjárással nem kapcsolatos kérdésekre az agent mindig egy
+> statikus, angol nyelvű elutasító üzenettel válaszol, a kérdés nyelvétől
+> függetlenül.
+
 ### Parancssori paraméterek
 
 | Paraméter | Kötelező | Leírás |
